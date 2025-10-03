@@ -1,6 +1,5 @@
 # RetailMind 🔮: Advanced Retail Analytics Dashboard
 
-
 <p align="center">
   <img src="images/Dashboard1.png" alt="Dashboard 1" width="700">
 </p>
@@ -13,6 +12,12 @@
 </p>
 <p align="center">
   <em>Dashboard 2: Customer Analytics</em>
+</p>
+
+  <img src="images/dashboard2.png" alt="dashboard 2" width="700">
+</p>
+<p align="center">
+  <em>dashboard 2: Customer Analytics</em>
 </p>
 
 **RetailMind** is a powerful, interactive web application built with **Streamlit** that provides a comprehensive suite of tools for analyzing retail sales data.  
