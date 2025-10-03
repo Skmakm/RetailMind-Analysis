@@ -1,5 +1,6 @@
 # RetailMind 🔮: Advanced Retail Analytics Dashboard
 
+
 <p align="center">
   <img src="images/Dashboard1.png" alt="Dashboard 1" width="700">
 </p>
@@ -13,8 +14,6 @@
 <p align="center">
   <em>Dashboard 2: Customer Analytics</em>
 </p>
-
-
 
 **RetailMind** is a powerful, interactive web application built with **Streamlit** that provides a comprehensive suite of tools for analyzing retail sales data.  
 This dashboard empowers users to move beyond simple sales tracking and uncover deep insights into customer behavior, predict future trends, and make data-driven decisions to boost profitability and customer retention.
