@@ -14,12 +14,6 @@
   <em>Dashboard 2: Customer Analytics</em>
 </p>
 
-  <img src="images/dashboard2.png" alt="dashboard 2" width="700">
-</p>
-<p align="center">
-  <em>dashboard 2: Customer Analytics</em>
-</p>
-
 **RetailMind** is a powerful, interactive web application built with **Streamlit** that provides a comprehensive suite of tools for analyzing retail sales data.  
 This dashboard empowers users to move beyond simple sales tracking and uncover deep insights into customer behavior, predict future trends, and make data-driven decisions to boost profitability and customer retention.
 
