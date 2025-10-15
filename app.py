@@ -10,14 +10,13 @@ from mlxtend.frequent_patterns import association_rules
 import statsmodels.api as sm
 from sklearn.linear_model import LogisticRegression
 
-# --- PAGE CONFIGURATION ---
+
 st.set_page_config(
     page_title="RetailMind Analysis",
     page_icon="🔮",
     layout="wide"
 )
 
-# --- CUSTOM CSS ---
 st.markdown("""
 <style>
     /* Main titles */
@@ -50,13 +49,12 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- HELPER FUNCTIONS ---
 @st.cache_data
 def convert_df_to_csv(df):
     """Converts a DataFrame to a CSV string."""
     return df.to_csv(index=False).encode('utf-8')
 
-# --- DATA LOADING & CLEANING ---
+
 @st.cache_data
 def load_and_clean_data(uploaded_file):
     """
@@ -69,7 +67,6 @@ def load_and_clean_data(uploaded_file):
     df['TotalPrice'] = df['Quantity'] * df['UnitPrice']
     return df
 
-# --- RFM SEGMENTATION LOGIC ---
 def get_rfm_segment(r, f, m):
     """Assigns a segment name based on R, F, M scores."""
     if r >= 4 and f >= 4: return 'Champions'
@@ -85,13 +82,13 @@ def get_rfm_segment(r, f, m):
     return 'Lost'
 
 
-# --- RFM & COHORT CALCULATION ---
+
 @st.cache_data
 def calculate_metrics(df):
     """
     Calculates RFM metrics, segments, and cohort analysis data.
     """
-    # --- RFM Calculation ---
+    
     snapshot_date = df['InvoiceDate'].max() + pd.Timedelta(days=1)
     rfm = df.groupby('CustomerID').agg({
         'InvoiceDate': lambda date: (snapshot_date - date.max()).days,
@@ -107,7 +104,7 @@ def calculate_metrics(df):
     rfm['RFM_Score'] = rfm['R_Score'].astype(str) + rfm['F_Score'].astype(str) + rfm['M_Score'].astype(str)
     rfm['Segment'] = rfm.apply(lambda x: get_rfm_segment(x['R_Score'], x['F_Score'], x['M_Score']), axis=1)
 
-    # --- Cohort Analysis Calculation ---
+    
     df['InvoiceMonth'] = df['InvoiceDate'].dt.to_period('M')
     df['CohortMonth'] = df.groupby('CustomerID')['InvoiceMonth'].transform('min')
     
@@ -128,7 +125,7 @@ def calculate_metrics(df):
 
     return rfm, retention_matrix
 
-# --- CLV PREDICTION ---
+
 @st.cache_data
 def calculate_clv(df):
     """
@@ -167,14 +164,14 @@ def calculate_clv(df):
     except ConvergenceError:
         return None
 
-# --- PRODUCT AFFINITY (MARKET BASKET ANALYSIS) ---
+
 @st.cache_data
 def market_basket_analysis(df, selected_product):
     """
     Performs market basket analysis to find frequently co-purchased items.
     Optimized to prevent memory errors.
     """
-    # Limit data to recent transactions to prevent memory overload
+    
     analysis_df = df.tail(20000)
     
     try:
@@ -194,12 +191,9 @@ def market_basket_analysis(df, selected_product):
     except Exception:
         return None
 
-# --- SALES FORECASTING ---
+
 @st.cache_data
 def calculate_forecast(df):
-    """
-    Calculates a 12-month sales forecast using SARIMA model.
-    """
     sales_data = df.set_index('InvoiceDate')['TotalPrice'].resample('MS').sum()
     
     if len(sales_data) < 24: # Need enough data for seasonal model
@@ -218,7 +212,7 @@ def calculate_forecast(df):
     except:
         return None, None
 
-# --- CHURN PREDICTION ---
+
 @st.cache_data
 def calculate_churn_prediction(rfm_df):
     """
@@ -242,11 +236,11 @@ def calculate_churn_prediction(rfm_df):
         return None
 
 
-# --- MAIN APP ---
+
 st.title("RetailMind Analysis")
 st.markdown("---")
 
-# --- SIDEBAR ---
+
 st.sidebar.header("Controls")
 uploaded_file = st.sidebar.file_uploader("Upload your CSV file", type="csv")
 
@@ -269,14 +263,14 @@ if uploaded_file is None:
         
     st.stop()
 
-# --- DATA PROCESSING & DASHBOARD ---
+
 try:
     df = load_and_clean_data(uploaded_file)
 except Exception as e:
     st.error(f"Error processing the file: {e}")
     st.stop()
 
-# --- SIDEBAR FILTERS (DYNAMIC) ---
+
 st.sidebar.header("Filters")
 country_options = ['All'] + list(df['Country'].unique())
 selected_country = st.sidebar.multiselect(
@@ -310,14 +304,14 @@ filtered_df = df[
     (df['InvoiceDate'].dt.date <= end_date)
 ]
 
-# --- DASHBOARD BODY ---
+
 if not filtered_df.empty:
     rfm_df, retention_matrix = calculate_metrics(filtered_df)
     
     tab_list = ["📊 Sales Overview", "🎯 RFM Segmentation", "🔄 Cohort Retention", "🔮 Predictive (CLV)", "🛒 Product Affinity", "📈 Sales Forecast", "💔 Churn Prediction"]
     tabs = st.tabs(tab_list)
 
-    # --- TAB 1: SALES OVERVIEW ---
+    
     with tabs[0]:
         st.header("Key Performance Indicators")
         total_sales = int(filtered_df['TotalPrice'].sum())
@@ -334,7 +328,7 @@ if not filtered_df.empty:
             
         st.divider()
 
-        # --- Geospatial Sales Map ---
+        
         st.subheader("Geospatial Sales Distribution")
         map_data = filtered_df.groupby('Country')['TotalPrice'].sum().reset_index()
         fig_map = px.choropleth(
@@ -370,7 +364,7 @@ if not filtered_df.empty:
                                  x='TotalPrice', y='Country', orientation='h', title="Top 10 Countries by Sales")
             st.plotly_chart(fig_country, use_container_width=True)
 
-    # --- TAB 2: RFM ANALYSIS (ENHANCED INTERACTIVITY) ---
+    
     with tabs[1]:
         st.header("Customer Segmentation (RFM Analysis)")
         with st.expander("What is RFM Analysis?"):
@@ -416,7 +410,7 @@ if not filtered_df.empty:
         )
 
 
-    # --- TAB 3: COHORT ANALYSIS ---
+    
     with tabs[2]:
         st.header("Customer Retention Cohort Analysis")
         with st.expander("What is Cohort Analysis?"):
@@ -436,7 +430,7 @@ if not filtered_df.empty:
                                  yaxis_title='Acquisition Month')
         st.plotly_chart(fig_cohort, use_container_width=True)
 
-    # --- TAB 4: PREDICTIVE ANALYTICS (CLV) ---
+    
     with tabs[3]:
         st.header("Customer Lifetime Value (CLV) Prediction")
         
@@ -470,7 +464,7 @@ if not filtered_df.empty:
         else:
             st.warning("The CLV prediction model could not converge for the selected data filters. Please try a different date range or country selection.")
 
-    # --- TAB 5: PRODUCT AFFINITY ---
+    
     with tabs[4]:
         st.header("Product Affinity (Market Basket Analysis)")
         with st.expander("What is Product Affinity?"):
@@ -491,14 +485,14 @@ if not filtered_df.empty:
             elif rules_df is not None and not rules_df.empty:
                 st.subheader(f"Products frequently bought with '{selected_product}'")
                 
-                # Reformat consequents for better display
+                
                 rules_df['consequents'] = rules_df['consequents'].apply(lambda x: ', '.join(list(x)))
                 
                 st.dataframe(rules_df[['consequents', 'lift', 'confidence']].head(10))
             else:
                 st.warning("No significant product associations found for the selected product and filters. Try a more common product or wider filters.")
     
-    # --- TAB 6: SALES FORECAST ---
+    
     with tabs[5]:
         st.header("12-Month Sales Forecast")
         with st.expander("What is Sales Forecasting?"):
@@ -512,13 +506,13 @@ if not filtered_df.empty:
         if historical_data is not None and forecast_data is not None:
             fig_forecast = go.Figure()
             
-            # Historical data
+            
             fig_forecast.add_trace(go.Scatter(x=historical_data.index.to_timestamp(), y=historical_data, mode='lines', name='Historical Sales'))
             
-            # Forecast data
+            
             fig_forecast.add_trace(go.Scatter(x=forecast_data.index.to_timestamp(), y=forecast_data['mean'], mode='lines', name='Forecasted Sales', line=dict(dash='dash')))
             
-            # Confidence interval
+            
             fig_forecast.add_trace(go.Scatter(x=forecast_data.index.to_timestamp(), y=forecast_data['mean_ci_upper'], fill='tonexty', mode='none', name='Upper Confidence Interval', line=dict(color='rgba(0,0,0,0)')))
             fig_forecast.add_trace(go.Scatter(x=forecast_data.index.to_timestamp(), y=forecast_data['mean_ci_lower'], fill='tonexty', mode='none', name='Lower Confidence Interval', line=dict(color='rgba(0,0,0,0)')))
 
@@ -533,7 +527,7 @@ if not filtered_df.empty:
         else:
             st.warning("Could not generate a forecast. The model requires at least 24 months of historical data with consistent sales. Please select a wider date range.")
             
-    # --- TAB 7: CHURN PREDICTION ---
+    
     with tabs[6]:
         st.header("Customer Churn Prediction")
         with st.expander("What is Churn Prediction?"):
